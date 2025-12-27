@@ -1,3 +1,4 @@
+import MaintenanceCalendar from "./pages/MaintenanceCalendar";
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -45,7 +46,7 @@ const App = () => (
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/projects" element={<Projects />} />
             <Route path="/project/:id" element={<ProjectDetails />} />
-            <Route path="/maintenance" element={<Projects />} />
+            <Route path="/maintenance" element={<MaintenanceCalendar />} />
             <Route path="/maintenance/:id" element={<MaintenanceDetails />} />
             <Route path="/teams" element={<Teams />} />
             <Route path="/settings" element={<Settings />} />
