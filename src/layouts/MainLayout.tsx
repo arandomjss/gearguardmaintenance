@@ -2,10 +2,15 @@ import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
 import { useEffect } from 'react';
 import {
   LayoutDashboard,
+  Calendar,
+  Wrench,
   FolderKanban,
   Settings,
+  ClipboardPlus,
   LogOut,
+  Users,
   Search,
+  SquareChartGantt,
   Bell,
   ChevronDown,
 } from 'lucide-react';
@@ -22,10 +27,30 @@ import {
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { toast } from 'sonner';
 
-const navigation = [
+// Define types for better safety
+type NavItem = {
+  name: string;
+  href: string;
+  icon: any;
+  children?: { name: string; href: string }[];
+};
+
+const navigation: NavItem[] = [
   { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
-  { name: 'Projects', href: '/projects', icon: FolderKanban },
-  { name: 'Settings', href: '/settings', icon: Settings },
+  { name: 'Maintenance Calendar', href: '/maintenancecalender', icon: Calendar },
+  { 
+    name: 'Equipment', 
+    href: '/equipment', 
+    icon: Wrench,
+    // Added sub-menus here
+    children: [
+      { name: 'Work Center', href: '/equipment/work-center' },
+      { name: 'Machine & Tools', href: '/equipment/machines' },
+    ]
+  },
+  { name: 'Reporting', href: '/reporting', icon: ClipboardPlus },
+  { name: 'Teams', href: '/teams', icon: Users },
+  { name: 'Maintenance', href: '/maintenance', icon: Wrench }, // Changed icon and name
 ];
 
 export default function MainLayout() {
@@ -55,7 +80,7 @@ export default function MainLayout() {
             <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center">
               <span className="text-primary-foreground font-bold text-sm">P</span>
             </div>
-            <span className="hidden sm:block text-foreground">ProjectHub</span>
+            <span className="hidden sm:block text-foreground">Gear Guard</span>
           </Link>
 
           {/* Navigation Links */}
@@ -63,6 +88,42 @@ export default function MainLayout() {
             {navigation.map(item => {
               const isActive = location.pathname === item.href || 
                 (item.href !== '/dashboard' && location.pathname.startsWith(item.href));
+
+              // CHECK: Does this item have a dropdown?
+              if (item.children) {
+                return (
+                  <DropdownMenu key={item.name}>
+                    <DropdownMenuTrigger asChild>
+                      <button
+                        className={cn(
+                          'flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 outline-none',
+                          isActive
+                            ? 'bg-primary/10 text-primary'
+                            : 'text-muted-foreground hover:text-foreground hover:bg-muted'
+                        )}
+                      >
+                        <item.icon className="h-4 w-4" />
+                        {item.name}
+                        <ChevronDown className="h-3 w-3 ml-0.5 opacity-50" />
+                      </button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="start" className="w-48">
+                      {item.children.map((child) => (
+                        <DropdownMenuItem key={child.name} asChild>
+                          <Link 
+                            to={child.href}
+                            className="cursor-pointer w-full"
+                          >
+                            {child.name}
+                          </Link>
+                        </DropdownMenuItem>
+                      ))}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                );
+              }
+
+              // STANDARD LINK (No Dropdown)
               return (
                 <Link
                   key={item.name}
