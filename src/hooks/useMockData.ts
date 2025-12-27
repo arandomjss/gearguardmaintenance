@@ -86,6 +86,18 @@ export function useCurrentUser(): UseAsyncDataResult<User> {
 // Supabase-backed maintenance requests hook
 export function useMaintenanceRequests(): UseAsyncDataResult<MaintenanceRequest[]> {
   return useAsyncData(async () => {
+    // DEBUG: log auth session/user to verify client role (anon vs authenticated)
+    try {
+      const sessionRes = await supabase.auth.getSession();
+      // eslint-disable-next-line no-console
+      console.debug('useMaintenanceRequests: supabase session', sessionRes);
+      const userRes = await supabase.auth.getUser();
+      // eslint-disable-next-line no-console
+      console.debug('useMaintenanceRequests: supabase user', userRes);
+    } catch (e) {
+      // eslint-disable-next-line no-console
+      console.debug('useMaintenanceRequests: auth debug failed', e);
+    }
     const { data, error } = await supabase
       .from('maintenance_requests')
       .select('*')
@@ -121,6 +133,9 @@ export function useMaintenanceRequests(): UseAsyncDataResult<MaintenanceRequest[
       const { data: prData, error: prError } = await supabase.from('profiles').select('id,full_name').in('id', profileIds);
       // eslint-disable-next-line no-console
       if (prError) console.error('useMaintenanceRequests: profiles fetch error', prError);
+      // DEBUG: log raw profiles response so we can see what PostgREST returned
+      // eslint-disable-next-line no-console
+      console.debug('useMaintenanceRequests: profiles raw', { prData, prError });
       (prData || []).forEach((p: any) => {
         profileMap[p.id] = { full_name: p.full_name };
       });
