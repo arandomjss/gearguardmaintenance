@@ -1,4 +1,5 @@
-import { useDashboardStats, useProjects, useRecentActivities } from '@/hooks/useMockData';
+import React, { useState } from 'react';
+import { useDashboardStats, useProjects, useRecentActivities, useMaintenanceRequests, MaintenanceRequest } from '@/hooks/useMockData';
 import { StatCard } from '@/components/StatCard';
 import { ProjectCard, ProjectCardSkeleton } from '@/components/ProjectCard';
 import { ActivityFeed } from '@/components/ActivityFeed';
@@ -10,6 +11,9 @@ export default function Dashboard() {
   const { data: stats, isLoading: statsLoading } = useDashboardStats();
   const { data: projects, isLoading: projectsLoading } = useProjects();
   const { data: activities, isLoading: activitiesLoading } = useRecentActivities();
+  const { data: requests, isLoading: requestsLoading } = useMaintenanceRequests();
+
+  const [expandedId, setExpandedId] = useState<number | null>(null);
 
   const activeProjects = projects?.filter(p => p.status === 'active').slice(0, 3) || [];
 
@@ -75,23 +79,49 @@ export default function Dashboard() {
             </Link>
           </div>
 
-          <div className="grid gap-4">
-            {projectsLoading ? (
-              <>
+          <div className="overflow-x-auto bg-card rounded-xl border border-border p-4">
+            {requestsLoading ? (
+              <div className="space-y-2">
                 <ProjectCardSkeleton />
                 <ProjectCardSkeleton />
                 <ProjectCardSkeleton />
-              </>
+              </div>
             ) : (
-              activeProjects.map((project, index) => (
-                <div
-                  key={project.id}
-                  className="animate-slide-up"
-                  style={{ animationDelay: `${index * 100}ms` }}
-                >
-                  <ProjectCard project={project} />
-                </div>
-              ))
+              <table className="min-w-full table-auto divide-y divide-border">
+                <thead>
+                  <tr className="text-left text-sm text-muted-foreground">
+                    <th className="px-4 py-3">Subject</th>
+                    <th className="px-4 py-3">Employee</th>
+                    <th className="px-4 py-3">Technician</th>
+                    <th className="px-4 py-3">Category</th>
+                    <th className="px-4 py-3">Stage</th>
+                    <th className="px-4 py-3">Company</th>
+                    <th className="px-4 py-3">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="bg-card">
+                  {(requests || []).slice(0, 20).map((r: MaintenanceRequest) => (
+                    <tr
+                      key={r.id}
+                      className="border-t border-border hover:bg-muted/5 cursor-pointer"
+                      onClick={() => setExpandedId(expandedId === r.id ? null : r.id)}
+                    >
+                      <td className="px-4 py-3">
+                        <div className="text-sm font-medium">{r.subject || '—'}</div>
+                        <div className="text-xs text-muted-foreground">#{r.id} • {r.request_type ?? ''}</div>
+                      </td>
+                      <td className="px-4 py-3 text-sm">{r.creator_name ?? '—'}</td>
+                      <td className="px-4 py-3 text-sm">{r.technician_name ?? 'Unassigned'}</td>
+                      <td className="px-4 py-3 text-sm">{r.equipment_category ?? r.equipment_name ?? '—'}</td>
+                      <td className="px-4 py-3 text-sm">{r.stage ?? 'New Request'}</td>
+                      <td className="px-4 py-3 text-sm">{r.company ?? '—'}</td>
+                      <td className="px-4 py-3 text-sm">
+                        <Link to={`/maintenance/${r.id}`} className="text-primary hover:underline">Open</Link>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             )}
           </div>
         </div>
