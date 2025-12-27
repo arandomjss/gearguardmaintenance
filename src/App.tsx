@@ -11,6 +11,7 @@ import Projects from "./pages/Projects";
 import ProjectDetails from "./pages/ProjectDetails";
 import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
+import Reporting from "./pages/Reporting";
 import MaintenanceDetails from "./pages/MaintenanceDetails";
 import Teams from "./pages/Teams";
 
@@ -50,6 +51,7 @@ const App = () => (
             <Route path="/maintenance/:id" element={<MaintenanceDetails />} />
             <Route path="/teams" element={<Teams />} />
             <Route path="/settings" element={<Settings />} />
+            <Route path="/reporting" element={<Reporting />} />
           </Route>
 
           {/* Redirects */}
