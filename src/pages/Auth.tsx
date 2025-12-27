@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
+import { supabase } from '@/lib/supabase';
 import { Eye, EyeOff, Loader2 } from 'lucide-react';
 
 const loginSchema = z.object({
@@ -31,19 +32,36 @@ export default function Auth() {
 
   const onSubmit = async (data: LoginFormData) => {
     setIsLoading(true);
-    
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 800));
-    
-    // Set auth token
-    localStorage.setItem('authToken', 'mock-token-' + Date.now());
-    
-    setIsLoading(false);
-    toast.success('Welcome back!', {
-      description: 'You have been logged in successfully.',
-    });
-    
-    navigate('/dashboard', { replace: true });
+
+    const { email, password } = data;
+
+    try {
+      const { data: authData, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+      setIsLoading(false);
+
+      if (error) {
+        toast.error('Login failed: ' + (error.message ?? 'Unknown error'));
+        return;
+      }
+
+      if (authData?.session?.access_token) {
+        localStorage.setItem('authToken', authData.session.access_token);
+      }
+
+      toast.success('Welcome back!', {
+        description: 'You have been logged in successfully.',
+      });
+
+      navigate('/dashboard', { replace: true });
+    } catch (err: any) {
+      setIsLoading(false);
+      toast.error('An unexpected error occurred.');
+      console.error('Auth error', err);
+    }
   };
 
   return (
@@ -137,7 +155,10 @@ export default function Auth() {
 
           <div className="mt-6 text-center text-sm text-muted-foreground">
             Don't have an account?{' '}
-            <button className="font-medium text-primary hover:underline">
+            <button
+              onClick={() => navigate('/signup')}
+              className="font-medium text-primary hover:underline"
+            >
               Sign up
             </button>
           </div>
