@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { supabase } from '@/lib/supabase';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -14,91 +13,53 @@ import {
   Settings, 
   Star, 
   User, 
-  MoreHorizontal
+  Calendar,
+  Clock
 } from 'lucide-react';
 
 // Status Pipeline Steps
 const STEPS = ["New Request", "In Progress", "Repaired", "Scrap"];
 
+// --- HARDCODED DATA ---
+const MOCK_DATA = {
+  id: 1,
+  subject: "Oil Leakage in Conveyor Belt",
+  request_date: "2023-10-25",
+  schedule_date: "2023-10-27T10:00",
+  duration_hours: 4,
+  priority: "3", // 3 stars
+  status: "In Progress",
+  type: "corrective",
+  description: "Detected oil leakage near the main motor assembly. Needs urgent seal replacement.",
+  
+  // Relations
+  creator_name: "Anas Makari",
+  technician_name: "Marc Demo",
+  maintenance_for: "Internal Maintenance",
+  company: "My Company (San Francisco)",
+  
+  equipment: {
+    name: "Conveyor Belt M-01",
+    category: "Motors",
+    id: 101
+  }
+};
+
 export default function MaintenanceDetails() {
   const navigate = useNavigate();
-  const { id } = useParams(); // <--- This grabs the ID from the URL
-  const [request, setRequest] = useState<any | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { id } = useParams(); 
+  
+  // Initialize with Mock Data directly
+  const [request, setRequest] = useState<any>(MOCK_DATA);
+  const [status, setStatus] = useState<string>(MOCK_DATA.status);
+  const [priority, setPriority] = useState<string>(MOCK_DATA.priority);
+  const [maintenanceType, setMaintenanceType] = useState<string>(MOCK_DATA.type);
 
-  const [status, setStatus] = useState<string | null>(null);
-  const [priority, setPriority] = useState<string | null>(null);
-  const [maintenanceType, setMaintenanceType] = useState<string | null>(null);
-
+  // You can keep this effect if you want to TRY fetching real data later
   useEffect(() => {
-    async function load() {
-      if (!id) return;
-      setIsLoading(true);
-      setError(null);
-      try {
-        const reqId = Number(id);
-        const { data: mrData, error: mrError } = await supabase
-          .from('maintenance_requests')
-          .select('*')
-          .eq('id', reqId)
-          .single();
-
-        if (mrError) throw mrError;
-
-        // enrich equipment
-        let equipment: any = null;
-        if (mrData?.equipment_id) {
-          const { data: eqData, error: eqError } = await supabase
-            .from('equipment')
-            .select('id,name,category')
-            .eq('id', mrData.equipment_id)
-            .single();
-          if (eqError) console.warn('equipment fetch error', eqError);
-          equipment = eqData || null;
-        }
-
-        // enrich profiles (creator and technician)
-        let creator: any = null;
-        let technician: any = null;
-        if (mrData?.created_by) {
-          const { data: pData, error: pErr } = await supabase
-            .from('profiles')
-            .select('id,full_name')
-            .eq('id', mrData.created_by)
-            .single();
-          if (pErr) console.warn('creator fetch error', pErr);
-          creator = pData || null;
-        }
-        if (mrData?.technician_id) {
-          const { data: tData, error: tErr } = await supabase
-            .from('profiles')
-            .select('id,full_name')
-            .eq('id', mrData.technician_id)
-            .single();
-          if (tErr) console.warn('technician fetch error', tErr);
-          technician = tData || null;
-        }
-
-        const merged = {
-          ...mrData,
-          equipment,
-          creator_name: creator?.full_name ?? null,
-          technician_name: technician?.full_name ?? null,
-        };
-
-        setRequest(merged);
-        setStatus(mrData.stage ?? mrData.status ?? 'New Request');
-        setPriority(String(mrData.priority ?? '1'));
-        setMaintenanceType(mrData.request_type ?? mrData.type ?? 'corrective');
-      } catch (err: any) {
-        console.error('Failed to load maintenance request', err);
-        setError(err?.message ?? String(err));
-      } finally {
-        setIsLoading(false);
-      }
-    }
-    load();
+    console.log("Maintenance Details Loaded for ID:", id);
+    // If you want to fetch real data, put your Supabase logic here.
+    // For now, we just rely on the MOCK_DATA above.
   }, [id]);
 
   return (
@@ -111,7 +72,7 @@ export default function MaintenanceDetails() {
             <ArrowLeft className="mr-2 h-4 w-4" /> Back to Maintenance
           </Button>
           <div className="text-sm text-muted-foreground hidden sm:block">
-            Maintenance Requests / <span className="text-foreground font-medium">{isLoading ? 'Loading…' : request?.subject ?? 'Maintenance'}</span>
+            Maintenance Requests / <span className="text-foreground font-medium">{request.subject}</span>
           </div>
         </div>
         <div className="flex gap-2">
@@ -120,25 +81,14 @@ export default function MaintenanceDetails() {
         </div>
       </div>
 
-      {/* Main Content Card (Odoo Style) */}
+      {/* Main Content Card */}
       <div className="border border-border rounded-lg overflow-hidden shadow-sm">
         
-        {/* Loading / Error */}
-        {isLoading && (
-          <div className="p-6">
-            <div className="text-sm text-muted-foreground">Loading maintenance request…</div>
-          </div>
-        )}
-        {error && (
-          <div className="p-6">
-            <div className="text-sm text-destructive">{error}</div>
-          </div>
-        )}
-
         {/* Header: Title & Status Pipeline */}
         <div className="bg-white p-4 flex flex-col xl:flex-row xl:items-center justify-between gap-4 border-b">
           <div className="flex items-center gap-4">
-             <h1 className="text-2xl font-bold truncate">{request?.subject ?? '—'}</h1>
+             <h1 className="text-2xl font-bold truncate">{request.subject}</h1>
+             <span className="text-xs font-mono text-muted-foreground bg-muted px-2 py-1 rounded">#{id || 'NEW'}</span>
           </div>
 
           {/* Status Pipeline Pill */}
@@ -171,22 +121,33 @@ export default function MaintenanceDetails() {
           <div className="space-y-6">
             <div className="grid grid-cols-3 items-center gap-4">
               <Label className="text-muted-foreground font-normal">Created By</Label>
-              <div className="col-span-2 font-medium">{request?.creator_name ?? '—'}</div>
+              <div className="col-span-2 font-medium flex items-center gap-2">
+                <div className="h-6 w-6 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-xs font-bold">
+                  {request.creator_name[0]}
+                </div>
+                {request.creator_name}
+              </div>
             </div>
 
             <div className="grid grid-cols-3 items-center gap-4">
               <Label className="text-muted-foreground font-normal">Equipment</Label>
               <div className="col-span-2">
-                <Select defaultValue={request?.equipment?.name ?? undefined}>
-                  <SelectTrigger className="h-8">
+                <Select defaultValue={request.equipment.name}>
+                  <SelectTrigger className="h-9">
                     <SelectValue placeholder="Select Equipment" />
                   </SelectTrigger>
                   <SelectContent>
+<<<<<<< HEAD
                     {request?.equipment?.name ? (
                         <SelectItem value={request.equipment.name}>{request.equipment.name}</SelectItem>
                       ) : (
                         <SelectItem value="__none">No equipment</SelectItem>
                       )}
+=======
+                    <SelectItem value={request.equipment.name}>{request.equipment.name}</SelectItem>
+                    <SelectItem value="drill">Drill Press X2</SelectItem>
+                    <SelectItem value="laptop">Dell Latitude</SelectItem>
+>>>>>>> 6c7007bb8d6c0deafd611751552116163c230f57
                   </SelectContent>
                 </Select>
               </div>
@@ -194,23 +155,23 @@ export default function MaintenanceDetails() {
 
             <div className="grid grid-cols-3 items-center gap-4">
               <Label className="text-muted-foreground font-normal">Category</Label>
-              <div className="col-span-2 border-b border-border pb-1">{request?.equipment?.category ?? '—'}</div>
+              <div className="col-span-2 border-b border-border pb-1 text-sm">{request.equipment.category}</div>
             </div>
 
              <div className="grid grid-cols-3 items-center gap-4">
               <Label className="text-muted-foreground font-normal">Request Date</Label>
               <div className="col-span-2">
-                 <Input type="date" defaultValue={request?.request_date ?? ''} className="h-8" />
+                 <Input type="date" defaultValue={request.request_date} className="h-9" />
               </div>
             </div>
 
             <div className="grid grid-cols-3 items-start gap-4 pt-2">
-              <Label className="text-muted-foreground font-normal mt-1">Maintenance Type</Label>
+              <Label className="text-muted-foreground font-normal mt-1">Type</Label>
               <div className="col-span-2">
                 <RadioGroup 
-                  value={maintenanceType ?? undefined} 
+                  value={maintenanceType} 
                   onValueChange={setMaintenanceType}
-                  className="flex flex-col space-y-2"
+                  className="flex flex-col space-y-3"
                 >
                   <div className="flex items-center space-x-2">
                     <RadioGroupItem value="corrective" id="r1" />
@@ -229,28 +190,32 @@ export default function MaintenanceDetails() {
           <div className="space-y-6">
             <div className="grid grid-cols-3 items-center gap-4">
               <Label className="text-muted-foreground font-normal">Team</Label>
-              <div className="col-span-2 border-b border-border pb-1">{request?.maintenance_for ?? '—'}</div>
+              <div className="col-span-2 border-b border-border pb-1 text-sm">{request.maintenance_for}</div>
             </div>
 
             <div className="grid grid-cols-3 items-center gap-4">
               <Label className="text-muted-foreground font-normal">Technician</Label>
               <div className="col-span-2 border-b border-border pb-1 flex items-center justify-between">
-                <span>{request?.technician_name ?? 'Unassigned'}</span>
-                <User className="h-4 w-4 text-muted-foreground" />
+                <div className="flex items-center gap-2">
+                   <User className="h-4 w-4 text-muted-foreground" />
+                   <span>{request.technician_name}</span>
+                </div>
               </div>
             </div>
 
             <div className="grid grid-cols-3 items-center gap-4">
-              <Label className="text-muted-foreground font-normal">Scheduled Date</Label>
-              <div className="col-span-2 flex items-center gap-2">
-                <Input type="datetime-local" defaultValue={request?.schedule_date ? new Date(request.schedule_date).toISOString().slice(0,16) : ''} className="h-8" />
+              <Label className="text-muted-foreground font-normal">Scheduled</Label>
+              <div className="col-span-2 flex items-center gap-2 relative">
+                <Calendar className="h-4 w-4 text-muted-foreground absolute left-3 z-10" />
+                <Input type="datetime-local" defaultValue={request.schedule_date} className="h-9 pl-9" />
               </div>
             </div>
 
              <div className="grid grid-cols-3 items-center gap-4">
               <Label className="text-muted-foreground font-normal">Duration</Label>
-              <div className="col-span-2 flex items-center gap-2">
-                <Input type="number" defaultValue={request?.duration_hours ?? 0} className="w-20 h-8" />
+              <div className="col-span-2 flex items-center gap-2 relative">
+                <Clock className="h-4 w-4 text-muted-foreground absolute left-3 z-10" />
+                <Input type="number" defaultValue={request.duration_hours} className="w-24 h-9 pl-9" />
                 <span className="text-sm text-muted-foreground">hours</span>
               </div>
             </div>
@@ -267,7 +232,7 @@ export default function MaintenanceDetails() {
                     <Star 
                       className={cn(
                         "h-5 w-5", 
-                        parseInt(priority ?? '0') >= star ? "fill-amber-400 text-amber-400" : "text-muted-foreground/30"
+                        parseInt(priority) >= star ? "fill-amber-400 text-amber-400" : "text-muted-foreground/30"
                       )} 
                     />
                   </button>
@@ -277,7 +242,7 @@ export default function MaintenanceDetails() {
 
             <div className="grid grid-cols-3 items-center gap-4">
               <Label className="text-muted-foreground font-normal">Company</Label>
-              <div className="col-span-2 border-b border-border pb-1">{request?.company ?? '—'}</div>
+              <div className="col-span-2 border-b border-border pb-1 text-sm">{request.company}</div>
             </div>
           </div>
 
@@ -285,26 +250,26 @@ export default function MaintenanceDetails() {
 
         {/* Bottom Tabs */}
         <div className="bg-muted/10 border-t border-border p-4">
-           <Tabs defaultValue="notes" className="w-full">
+           <Tabs defaultValue="description" className="w-full">
             <TabsList className="bg-transparent border-b w-full justify-start h-auto p-0 rounded-none">
+              <TabsTrigger 
+                value="description"
+                className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-4 py-2"
+              >
+                Description
+              </TabsTrigger>
               <TabsTrigger 
                 value="notes"
                 className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-4 py-2"
               >
-                Notes
-              </TabsTrigger>
-              <TabsTrigger 
-                value="instructions"
-                className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-4 py-2"
-              >
-                Instructions
+                Internal Notes
               </TabsTrigger>
             </TabsList>
-            <TabsContent value="notes" className="p-4 bg-white mt-0 border border-t-0 rounded-b-lg min-h-[100px]">
-              <p className="text-muted-foreground text-sm">Add internal notes here...</p>
+            <TabsContent value="description" className="p-4 bg-white mt-0 border border-t-0 rounded-b-lg min-h-[100px]">
+              <p className="text-gray-700 text-sm">{request.description}</p>
             </TabsContent>
-             <TabsContent value="instructions" className="p-4 bg-white mt-0 border border-t-0 rounded-b-lg min-h-[100px]">
-              <p className="text-muted-foreground text-sm">Maintenance instructions go here...</p>
+            <TabsContent value="notes" className="p-4 bg-white mt-0 border border-t-0 rounded-b-lg min-h-[100px]">
+              <p className="text-muted-foreground text-sm italic">No internal notes added yet.</p>
             </TabsContent>
           </Tabs>
         </div>

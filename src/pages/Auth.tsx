@@ -102,7 +102,7 @@ export default function Auth() {
         {/* Logo & Header */}
         <div className="text-center mb-8">
           <div className="inline-flex h-14 w-14 items-center justify-center rounded-xl bg-primary mb-4">
-            <span className="text-2xl font-bold text-primary-foreground">P</span>
+            <span className="text-2xl font-bold text-primary-foreground">G</span>
           </div>
           <h1 className="text-2xl font-bold text-foreground">Welcome back</h1>
           <p className="mt-2 text-muted-foreground">
