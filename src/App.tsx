@@ -10,6 +10,7 @@ import Projects from "./pages/Projects";
 import ProjectDetails from "./pages/ProjectDetails";
 import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
+import Reporting from "./pages/Reporting";
 import MaintenanceDetails from "./pages/MaintenanceDetails";
 
 const queryClient = new QueryClient();
@@ -47,6 +48,7 @@ const App = () => (
             <Route path="/maintenance" element={<Projects />} />
             <Route path="/maintenance/:id" element={<MaintenanceDetails />} />
             <Route path="/settings" element={<Settings />} />
+            <Route path="/reporting" element={<Reporting />} />
           </Route>
 
           {/* Redirects */}
