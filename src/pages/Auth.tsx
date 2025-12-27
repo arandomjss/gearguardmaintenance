@@ -41,6 +41,8 @@ export default function Auth() {
         password,
       });
 
+      console.debug('[Auth] signInWithPassword result', { authData, error });
+
       setIsLoading(false);
 
       if (error) {
@@ -50,6 +52,36 @@ export default function Auth() {
 
       if (authData?.session?.access_token) {
         localStorage.setItem('authToken', authData.session.access_token);
+        // ensure supabase client knows about the session
+        try {
+          await supabase.auth.setSession({
+            access_token: authData.session.access_token,
+            refresh_token: (authData.session as any).refresh_token || '',
+          });
+        } catch (e) {
+          // ignore setSession errors — getUser in layout will try again
+          console.warn('setSession warning', e);
+        }
+      }
+
+      // Fetch profile row and cache basic fields so header can show name immediately
+      try {
+        const userId = authData?.user?.id || authData?.user?.id;
+        if (userId) {
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('full_name')
+            .eq('id', userId)
+            .single();
+
+          if (profile) {
+            console.debug('[Auth] fetched profile after sign-in', profile);
+            localStorage.setItem('profileFullName', profile.full_name || '');
+          }
+        }
+      } catch (err) {
+        // non-fatal
+        console.warn('Could not fetch profile after sign-in', err);
       }
 
       toast.success('Welcome back!', {

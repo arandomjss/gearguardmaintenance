@@ -1,8 +1,8 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { useCurrentUser } from '@/hooks/useMockData';
+import { supabase } from '@/lib/supabase';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -21,8 +21,9 @@ const profileSchema = z.object({
 type ProfileFormData = z.infer<typeof profileSchema>;
 
 export default function Settings() {
-  const { data: user, isLoading } = useCurrentUser();
   const [isSaving, setIsSaving] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [user, setUser] = useState<{ name?: string; email?: string; role?: string } | null>(null);
   const [notifications, setNotifications] = useState({
     email: true,
     push: false,
@@ -33,13 +34,47 @@ export default function Settings() {
     register,
     handleSubmit,
     formState: { errors },
+    reset,
   } = useForm<ProfileFormData>({
     resolver: zodResolver(profileSchema),
     defaultValues: {
-      name: user?.name || '',
-      email: user?.email || '',
+      name: '',
+      email: '',
     },
   });
+
+  // load current user profile from Supabase
+  useEffect(() => {
+    let mounted = true;
+    async function load() {
+      setIsLoading(true);
+      try {
+        const { data: { user: authUser }, error: userErr } = await supabase.auth.getUser();
+        if (userErr) {
+          console.error('Error getting supabase user', userErr);
+        }
+        const userId = authUser?.id;
+        if (userId) {
+          const { data, error } = await supabase.from('profiles').select('full_name').eq('id', userId).single();
+          if (error) {
+            console.error('Error fetching profile', error);
+          } else if (mounted) {
+            const mapped = { name: data.full_name };
+            setUser(mapped);
+            // populate form fields
+            reset({ name: mapped.name || '', email: '' });
+          }
+        }
+      } catch (err) {
+        console.error('Unexpected error loading profile', err);
+      } finally {
+        if (mounted) setIsLoading(false);
+      }
+    }
+    load();
+    return () => { mounted = false; };
+  }, []);
+
 
   const onSubmit = async (data: ProfileFormData) => {
     setIsSaving(true);

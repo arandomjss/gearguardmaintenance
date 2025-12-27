@@ -1,5 +1,5 @@
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import {
   LayoutDashboard,
   Calendar,
@@ -26,6 +26,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { toast } from 'sonner';
+import { supabase } from '@/lib/supabase';
 
 // Define types for better safety
 type NavItem = {
@@ -56,6 +57,7 @@ const navigation: NavItem[] = [
 export default function MainLayout() {
   const location = useLocation();
   const navigate = useNavigate();
+  const [profile, setProfile] = useState<{ full_name?: string } | null>(null);
 
   useEffect(() => {
     const token = localStorage.getItem('authToken');
@@ -64,8 +66,76 @@ export default function MainLayout() {
     }
   }, [navigate]);
 
+  // Fetch profile for current user
+  useEffect(() => {
+    let mounted = true;
+    async function loadProfile() {
+      console.debug('[MainLayout] starting loadProfile, authToken:', localStorage.getItem('authToken'));
+      try {
+        let {
+          data: { user },
+          error: userErr,
+        } = await supabase.auth.getUser();
+
+        console.debug('[MainLayout] supabase.auth.getUser()', { user, userErr });
+
+        // If supabase client has no user but we have a stored token, set session
+        if ((!user || !user.id) && localStorage.getItem('authToken')) {
+          const token = localStorage.getItem('authToken') as string;
+          try {
+            await supabase.auth.setSession({ access_token: token, refresh_token: '' });
+            const res = await supabase.auth.getUser();
+            user = res.data.user;
+            if (res.error) console.error('getUser after setSession error', res.error);
+          } catch (setErr) {
+            console.error('Error setting supabase session from authToken', setErr);
+          }
+        }
+
+        if (userErr) {
+          console.error('Getting supabase user error', userErr);
+        }
+
+        // If we have a user id, try loading their profile row
+        if (user?.id) {
+          const { data, error } = await supabase
+            .from('profiles')
+            .select('full_name')
+            .eq('id', user.id)
+            .single();
+
+          console.debug('[MainLayout] profiles.select result', { data, error });
+
+          if (error) {
+            console.error('Error fetching profile', error);
+          } else if (mounted) {
+            setProfile(data as any);
+            // cache for quick header display
+            if (data?.full_name) localStorage.setItem('profileFullName', data.full_name);
+          }
+        } else {
+          // No user from supabase client: fall back to cached profile in localStorage
+          const cachedName = localStorage.getItem('profileFullName');
+          console.debug('[MainLayout] no supabase user, using cached profile', { cachedName });
+          if (mounted && cachedName) {
+            setProfile({ full_name: cachedName });
+          }
+        }
+      } catch (err) {
+        console.error('Unexpected error loading profile', err);
+      }
+    }
+
+    loadProfile();
+    return () => { mounted = false; };
+  }, []);
+
   const handleLogout = () => {
+    // sign out at supabase and clear local token
+    supabase.auth.signOut().catch(() => {});
     localStorage.removeItem('authToken');
+    localStorage.removeItem('profileFullName');
+    localStorage.removeItem('profileEmail');
     toast.success('Logged out successfully');
     navigate('/login', { replace: true });
   };
@@ -165,17 +235,22 @@ export default function MainLayout() {
                 <Button variant="ghost" className="gap-2 pl-2 pr-3">
                   <Avatar className="h-8 w-8">
                     <AvatarFallback className="bg-primary/10 text-primary font-medium">
-                      AM
+                      {(() => {
+                        const name = profile?.full_name || localStorage.getItem('profileFullName');
+                        if (name) return name.split(' ').map(n => n[0]).slice(0,2).join('').toUpperCase();
+                        const em = profile?.email || localStorage.getItem('profileEmail');
+                        return em ? em[0].toUpperCase() : 'U';
+                      })()}
                     </AvatarFallback>
                   </Avatar>
-                  <span className="hidden sm:block text-sm font-medium">Alex Morgan</span>
+                  <span className="hidden sm:block text-sm font-medium">{profile?.full_name ?? localStorage.getItem('profileFullName') ?? 'Account'}</span>
                   <ChevronDown className="h-4 w-4 text-muted-foreground" />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-56">
                 <div className="px-2 py-1.5">
-                  <p className="text-sm font-medium">Alex Morgan</p>
-                  <p className="text-xs text-muted-foreground">alex@company.io</p>
+                  <p className="text-sm font-medium">{profile?.full_name ?? localStorage.getItem('profileFullName') ?? 'Account'}</p>
+                  <p className="text-xs text-muted-foreground">{profile?.email ?? localStorage.getItem('profileEmail') ?? ''}</p>
                 </div>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem asChild>
