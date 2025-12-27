@@ -34,9 +34,9 @@ export default function Projects() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl lg:text-3xl font-bold text-foreground">Projects</h1>
+          <h1 className="text-2xl lg:text-3xl font-bold text-foreground">Maintenance Work</h1>
           <p className="mt-1 text-muted-foreground">
-            Manage and track all your projects in one place.
+            Manage and track all your maintenances in one place.
           </p>
         </div>
         <Button size="lg" className="shrink-0">

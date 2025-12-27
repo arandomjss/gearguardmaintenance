@@ -14,7 +14,7 @@ interface ProjectCardProps {
 export function ProjectCard({ project, className }: ProjectCardProps) {
   return (
     <Link
-      to={`/project/${project.id}`}
+      to={`/maintenance/${project.id}`}
       className={cn(
         'group block bg-card rounded-xl border border-border p-6 shadow-card transition-all duration-300 hover:shadow-elevated hover:-translate-y-1 hover:border-primary/20',
         className

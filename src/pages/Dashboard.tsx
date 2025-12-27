@@ -30,41 +30,43 @@ export default function Dashboard() {
       </div>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
-        <StatCard
-          title="Total Projects"
-          value={stats?.totalProjects || 0}
-          icon={FolderKanban}
-          isLoading={statsLoading}
-        />
-        <StatCard
-          title="Active Projects"
-          value={stats?.activeProjects || 0}
-          icon={TrendingUp}
-          trend={{ value: 8, isPositive: true }}
-          isLoading={statsLoading}
-        />
-        <StatCard
-          title="Team Members"
-          value={stats?.teamMembers || 0}
-          icon={Users}
-          isLoading={statsLoading}
-        />
-        <StatCard
-          title="Tasks Completed"
-          value={`${stats?.tasksCompleted || 0}/${stats?.tasksTotal || 0}`}
-          icon={CheckCircle2}
-          trend={{ value: stats?.revenueGrowth || 0, isPositive: true }}
-          isLoading={statsLoading}
-        />
-      </div>
+<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6"> {/* Changed to grid-cols-3 to match sketch */}
+  
+  {/* Card 1: Critical Equipment (Red) */}
+  <StatCard
+    title="Critical Equipment"
+    value="5 Units"
+    subtext="(Health < 30%)"
+    variant="critical"
+    isLoading={statsLoading}
+  />
 
+  {/* Card 2: Technician Load (Blue) */}
+  <StatCard
+    title="Technician Load"
+    value="85% Utilized"
+    subtext="(Assign Carefully)"
+    variant="primary"
+    isLoading={statsLoading}
+  />
+
+  {/* Card 3: Open Requests (Green) */}
+  {/* Note: I combined the 12 Pending and 3 Overdue into value/subtext to match layout */}
+  <StatCard
+    title="Open Requests"
+    value="12 Pending"
+    subtext="3 Overdue"
+    variant="success"
+    isLoading={statsLoading}
+  />
+
+</div>
       {/* Main Content Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-1 gap-6 lg:gap-8">
         {/* Active Projects */}
         <div className="lg:col-span-2 space-y-4">
           <div className="flex items-center justify-between">
-            <h2 className="text-lg font-semibold text-foreground">Active Projects</h2>
+            <h2 className="text-lg font-semibold text-foreground">Active Maintenance</h2>
             <Link to="/projects">
               <Button variant="ghost" size="sm" className="text-muted-foreground">
                 View all
@@ -94,7 +96,7 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* Recent Activity */}
+        {/* Recent Activity
         <div className="space-y-4">
           <h2 className="text-lg font-semibold text-foreground">Recent Activity</h2>
           <div className="bg-card rounded-xl border border-border p-4 shadow-card">
@@ -103,7 +105,7 @@ export default function Dashboard() {
               isLoading={activitiesLoading}
             />
           </div>
-        </div>
+        </div> */}
       </div>
     </div>
   );

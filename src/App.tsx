@@ -9,6 +9,7 @@ import Projects from "./pages/Projects";
 import ProjectDetails from "./pages/ProjectDetails";
 import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
+import MaintenanceDetails from "./pages/MaintenanceDetails";
 
 const queryClient = new QueryClient();
 
@@ -41,6 +42,8 @@ const App = () => (
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/projects" element={<Projects />} />
             <Route path="/project/:id" element={<ProjectDetails />} />
+            <Route path="/maintenance" element={<Projects />} />
+            <Route path="/maintenance/:id" element={<MaintenanceDetails />} />
             <Route path="/settings" element={<Settings />} />
           </Route>
 
