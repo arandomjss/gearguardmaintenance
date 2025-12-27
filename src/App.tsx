@@ -7,8 +7,6 @@ import MainLayout from "./layouts/MainLayout";
 import Auth from "./pages/Auth";
 import Signup from "./pages/Signup";
 import Dashboard from "./pages/Dashboard";
-import Projects from "./pages/Projects";
-import ProjectDetails from "./pages/ProjectDetails";
 import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
 import MaintenanceDetails from "./pages/MaintenanceDetails";
