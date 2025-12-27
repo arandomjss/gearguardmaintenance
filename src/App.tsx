@@ -1,4 +1,3 @@
-import MaintenanceCalendar from "./pages/MaintenanceCalendar";
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -11,7 +10,12 @@ import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
 import Reporting from "./pages/Reporting";
 import MaintenanceDetails from "./pages/MaintenanceDetails";
+import MaintenanceCalendar from "./pages/MaintenanceCalendar";
 import Teams from "./pages/Teams";
+
+// 👇 1. IMPORT EQUIPMENT PAGES
+import WorkCenter from "./pages/equipments/WorkCenter";
+import Machines from "./pages/equipments/Machines"; 
 
 const queryClient = new QueryClient();
 
@@ -43,11 +47,18 @@ const App = () => (
             }
           >
             <Route path="/dashboard" element={<Dashboard />} />
+            
+            {/* Maintenance */}
             <Route path="/maintenance" element={<MaintenanceCalendar />} />
             <Route path="/maintenance/:id" element={<MaintenanceDetails />} />
+            
+            {/* 👇 2. ADD EQUIPMENT ROUTES HERE */}
+            <Route path="/equipment/work-center" element={<WorkCenter />} />
+            <Route path="/equipment/machines" element={<Machines />} />
+
             <Route path="/teams" element={<Teams />} />
-            <Route path="/settings" element={<Settings />} />
             <Route path="/reporting" element={<Reporting />} />
+            <Route path="/settings" element={<Settings />} />
           </Route>
 
           {/* Redirects */}
