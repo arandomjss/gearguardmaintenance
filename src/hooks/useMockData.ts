@@ -108,7 +108,9 @@ export function useMaintenanceRequests(): UseAsyncDataResult<MaintenanceRequest[
 
     const equipmentMap: Record<number, { name?: string; category?: string }> = {};
     if (equipmentIds.length) {
-      const { data: eqData } = await supabase.from('equipment').select('id,name,category').in('id', equipmentIds);
+      const { data: eqData, error: eqError } = await supabase.from('equipment').select('id,name,category').in('id', equipmentIds);
+      // eslint-disable-next-line no-console
+      if (eqError) console.error('useMaintenanceRequests: equipment fetch error', eqError);
       (eqData || []).forEach((e: any) => {
         equipmentMap[e.id] = { name: e.name, category: e.category };
       });
@@ -116,7 +118,9 @@ export function useMaintenanceRequests(): UseAsyncDataResult<MaintenanceRequest[
 
     const profileMap: Record<string, { full_name?: string }> = {};
     if (profileIds.length) {
-      const { data: prData } = await supabase.from('profiles').select('id,full_name').in('id', profileIds);
+      const { data: prData, error: prError } = await supabase.from('profiles').select('id,full_name').in('id', profileIds);
+      // eslint-disable-next-line no-console
+      if (prError) console.error('useMaintenanceRequests: profiles fetch error', prError);
       (prData || []).forEach((p: any) => {
         profileMap[p.id] = { full_name: p.full_name };
       });
