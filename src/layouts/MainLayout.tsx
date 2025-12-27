@@ -35,14 +35,14 @@ type NavItem = {
   children?: { name: string; href: string }[];
 };
 
+// --- UPDATED NAVIGATION LINKS ---
 const navigation: NavItem[] = [
   { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
-  { name: 'Maintenance Calendar', href: '/maintenancecalender', icon: Calendar },
+  { name: 'Maintenance Calendar', href: '/maintenance', icon: Calendar }, // FIXED: Now points to the correct page
   { 
     name: 'Equipment', 
     href: '/equipment', 
     icon: Wrench,
-    // Added sub-menus here
     children: [
       { name: 'Work Center', href: '/equipment/work-center' },
       { name: 'Machine & Tools', href: '/equipment/machines' },
@@ -50,7 +50,6 @@ const navigation: NavItem[] = [
   },
   { name: 'Reporting', href: '/reporting', icon: ClipboardPlus },
   { name: 'Teams', href: '/teams', icon: Users },
-  { name: 'Maintenance', href: '/maintenance', icon: Wrench }, // Changed icon and name
 ];
 
 export default function MainLayout() {
