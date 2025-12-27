@@ -147,7 +147,7 @@ export default function MainLayout() {
           {/* Logo */}
           <Link to="/dashboard" className="flex items-center gap-2.5 font-bold text-xl mr-4">
             <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center">
-              <span className="text-primary-foreground font-bold text-sm">P</span>
+              <span className="text-primary-foreground font-bold text-sm">G</span>
             </div>
             <span className="hidden sm:block text-foreground">Gear Guard</span>
           </Link>
