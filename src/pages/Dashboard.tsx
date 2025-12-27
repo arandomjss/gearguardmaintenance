@@ -1,11 +1,11 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { useDashboardStats, useProjects, useRecentActivities, useMaintenanceRequests, MaintenanceRequest } from '@/hooks/useMockData';
 import { StatCard } from '@/components/StatCard';
 import { ProjectCard, ProjectCardSkeleton } from '@/components/ProjectCard';
 import { ActivityFeed } from '@/components/ActivityFeed';
 import { Button } from '@/components/ui/button';
 import { FolderKanban, Users, CheckCircle2, TrendingUp, Plus, ArrowRight } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 export default function Dashboard() {
   const { data: stats, isLoading: statsLoading } = useDashboardStats();
@@ -13,7 +13,7 @@ export default function Dashboard() {
   const { data: activities, isLoading: activitiesLoading } = useRecentActivities();
   const { data: requests, isLoading: requestsLoading } = useMaintenanceRequests();
 
-  const [expandedId, setExpandedId] = useState<number | null>(null);
+  const navigate = useNavigate();
 
   const activeProjects = projects?.filter(p => p.status === 'active').slice(0, 3) || [];
 
@@ -104,7 +104,7 @@ export default function Dashboard() {
                     <tr
                       key={r.id}
                       className="border-t border-border hover:bg-muted/5 cursor-pointer"
-                      onClick={() => setExpandedId(expandedId === r.id ? null : r.id)}
+                      onClick={() => navigate(`/maintenance/${r.id}`)}
                     >
                       <td className="px-4 py-3">
                         <div className="text-sm font-medium">{r.subject || '—'}</div>

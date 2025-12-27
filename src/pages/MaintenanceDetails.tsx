@@ -183,10 +183,10 @@ export default function MaintenanceDetails() {
                   </SelectTrigger>
                   <SelectContent>
                     {request?.equipment?.name ? (
-                      <SelectItem value={request.equipment.name}>{request.equipment.name}</SelectItem>
-                    ) : (
-                      <SelectItem value="">No equipment</SelectItem>
-                    )}
+                        <SelectItem value={request.equipment.name}>{request.equipment.name}</SelectItem>
+                      ) : (
+                        <SelectItem value="__none">No equipment</SelectItem>
+                      )}
                   </SelectContent>
                 </Select>
               </div>
